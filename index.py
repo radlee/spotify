@@ -2,6 +2,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import schedule
 import time
+import requests
 
 # Spotify credentials
 SPOTIPY_CLIENT_ID = '63f864c39cd44b4da318e9ace9536d3d'
@@ -15,7 +16,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=SPOTIPY_CLIENT_ID,
                                                redirect_uri=SPOTIPY_REDIRECT_URI,
                                                scope=scope))
 
-def change_playlist_and_set_volume(uris, volume_level):
+def change_playlist_and_set_volume(playlist_uri, volume_level):
     # Get current device
     devices = sp.devices()
     if not devices['devices']:
@@ -23,24 +24,32 @@ def change_playlist_and_set_volume(uris, volume_level):
         return
 
     device_id = devices['devices'][0]['id']
+    print(f"Using device ID: {device_id}")
 
-    # Start playing the track(s)
-    sp.start_playback(device_id=device_id, uris=uris)
+    try:
+        # Start playing the playlist
+        sp.start_playback(device_id=device_id, context_uri=playlist_uri)
 
-    # Set the volume
-    sp.volume(volume_level, device_id=device_id)
-    print(f"Started playing {uris} and set volume to {volume_level}%")
+        # Set the volume
+        sp.volume(volume_level, device_id=device_id)
+        print(f"Switched to playlist {playlist_uri} and set volume to {volume_level}%")
+    except spotipy.exceptions.SpotifyException as e:
+        print(f"Spotify API error: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Request error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
 
 # Define the job to be scheduled
 def job():
     print("Job started")
-    uris = ["spotify:track:3nD79qF668QGQqNagz6gEP"]  # Replace with your episode URI(s)
-    volume_level = 30  # Replace with your desired volume level
-    change_playlist_and_set_volume(uris, volume_level)
+    playlist_uri = "spotify:playlist:37i9dQZF1DXcBWIGoYBM5M"  # Replace with your playlist URI
+    volume_level = 90  # Desired volume level
+    change_playlist_and_set_volume(playlist_uri, volume_level)
     print("Job finished")
 
-# Schedule the job at a specific time (e.g., 09:40 AM)
-schedule.every().day.at("10:18").do(job)
+# Schedule the job at a specific time (e.g., 10:17 AM)
+schedule.every().day.at("10:17").do(job)
 
 print("Script is running and waiting for the scheduled time...")
 
