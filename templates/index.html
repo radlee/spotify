@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Scheduler</title>
+</head>
+<body>
+    <h1>Schedule Spotify Track</h1>
+    <form method="POST">
+        <label for="track_id">Track ID:</label><br>
+        <input type="text" id="track_id" name="track_id" required><br><br>
+        
+        <label for="time">Time (HH:MM in 24-hour format):</label><br>
+        <input type="text" id="time" name="time" required><br><br>
+        
+        <label for="volume">Volume Level (%):</label><br>
+        <input type="number" id="volume" name="volume" min="0" max="100" required><br><br>
+        
+        <input type="submit" value="Schedule">
+    </form>
+</body>
+</html>
