@@ -86,18 +86,24 @@ def schedule_job(playlist_uri, volume_level, time_input):
     def job():
         change_playlist_and_set_volume(playlist_uri, volume_level)
     
-    # Convert the input time to a time zone aware time
+    # Convert the input time to a timezone-aware datetime object
     now = datetime.now(TIME_ZONE)
     job_time = datetime.strptime(time_input, '%H:%M').time()
     schedule_time = now.replace(hour=job_time.hour, minute=job_time.minute, second=0, microsecond=0)
+    
+    # Subtract 2 hours from the input time
+    schedule_time -= timedelta(hours=2)
     
     if schedule_time < now:
         # Schedule for the next day if the time has already passed
         schedule_time += timedelta(days=1)
 
+    # Convert the adjusted time to HH:MM format for scheduling
+    adjusted_time_input = schedule_time.strftime('%H:%M')
+    
     # Schedule the job
-    schedule.every().day.at(time_input).do(job)
-    logger.info(f"Job scheduled to play playlist at {schedule_time.strftime('%H:%M')} {TIME_ZONE.zone}.")
+    schedule.every().day.at(adjusted_time_input).do(job)
+    logger.info(f"Job scheduled to play playlist at {adjusted_time_input} {TIME_ZONE.zone} (adjusted time).")
 
     # Run the scheduler in a separate thread
     def run_scheduler():
@@ -108,6 +114,7 @@ def schedule_job(playlist_uri, volume_level, time_input):
     scheduler_thread = threading.Thread(target=run_scheduler)
     scheduler_thread.daemon = True
     scheduler_thread.start()
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
