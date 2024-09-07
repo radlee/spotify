@@ -151,9 +151,13 @@ def index():
                         max-width: 400px;
                         width: 100%;
                         position: relative;
+                        text-align: center;
+                    }
+                    .logo {
+                        width: 100px;
+                        margin-bottom: 20px;
                     }
                     h1 {
-                        text-align: center;
                         color: #1DB954;
                         font-size: 24px;
                     }
@@ -205,6 +209,7 @@ def index():
             </head>
             <body>
                 <div class="container">
+                    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="logo">
                     <h1>Schedule Spotify Playlist</h1>
                     <form method="POST">
                         <label for="playlist_uri">Playlist:</label>
@@ -254,9 +259,13 @@ def index():
                     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
                     max-width: 400px;
                     width: 100%;
+                    text-align: center;
+                }
+                .logo {
+                    width: 100px;
+                    margin-bottom: 20px;
                 }
                 h1 {
-                    text-align: center;
                     color: #1DB954;
                     font-size: 24px;
                 }
@@ -292,6 +301,7 @@ def index():
         </head>
         <body>
             <div class="container">
+                <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="logo">
                 <h1>Schedule Spotify Playlist</h1>
                 <form method="POST">
                     <label for="playlist_uri">Playlist:</label>
@@ -313,6 +323,7 @@ def index():
         </body>
         </html>
     ''', playlists=playlists)
+
 
 if __name__ == '__main__':
     import os
