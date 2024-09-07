@@ -1,6 +1,7 @@
 services:
   - type: web
-    name: spotify-playlist-scheduler
+    name: my-flask-app
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python app.py"
+    port: 5000  # Render will map this to the port specified in the PORT environment variable
