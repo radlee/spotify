@@ -4,6 +4,9 @@ from spotipy.oauth2 import SpotifyOAuth
 import schedule
 import time
 import threading
+import os
+import logging
+
 
 app = Flask(__name__)
 
@@ -24,49 +27,56 @@ def get_playlists():
     playlists = results['items']
     return [(playlist['name'], playlist['uri']) for playlist in playlists]
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 def change_playlist_and_set_volume(playlist_uri, volume_level):
-    devices = sp.devices()
-    active_device = None
-
-    # Check for the currently active device
-    for device in devices['devices']:
-        if device['is_active']:
-            active_device = device
-            break
-
-    # If no active device, use the first available one
-    if not active_device and devices['devices']:
-        active_device = devices['devices'][0]
-        print(f"No active device found. Using device ID: {active_device['id']}")
-    elif not active_device:
-        print("No devices available.")
-        return
-
-    device_id = active_device['id']
-
+    logger.info('Starting playlist change...')
+    
     try:
+        # Get the list of devices
+        devices = sp.devices()
+        active_device = None
+
+        # Check for the currently active device
+        for device in devices['devices']:
+            if device['is_active']:
+                active_device = device
+                break
+
+        # If no active device, use the first available one
+        if not active_device and devices['devices']:
+            active_device = devices['devices'][0]
+            logger.info(f'No active device found. Using device ID: {active_device["id"]}')
+        elif not active_device:
+            logger.error('No devices available.')
+            return
+
+        device_id = active_device['id']
+
         # Start playing the playlist from the beginning
         sp.start_playback(device_id=device_id, context_uri=playlist_uri)
-        print(f"Started playing playlist {playlist_uri}")
+        logger.info(f'Started playing playlist {playlist_uri}')
 
         # Check if volume control is allowed on this device
         if active_device.get('volume_percent') is not None:
             sp.volume(volume_level, device_id=device_id)
-            print(f"Set volume to {volume_level}%")
+            logger.info(f'Set volume to {volume_level}%')
         else:
-            print(f"Volume control not allowed on device {active_device['name']}")
+            logger.warning(f'Volume control not allowed on device {active_device["name"]}')
 
         # Check playback state to ensure it's playing
         playback_state = sp.current_playback()
         if playback_state and playback_state['is_playing']:
-            print("Playback started successfully.")
+            logger.info('Playback started successfully.')
         else:
-            print("Playback did not start. Attempting to resume playback.")
+            logger.info('Playback did not start. Attempting to resume playback.')
             sp.start_playback(device_id=device_id, context_uri=playlist_uri)
     except spotipy.exceptions.SpotifyException as e:
-        print(f"Spotify API error: {e}")
+        logger.error(f'Spotify API error: {e}')
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logger.error(f'Unexpected error: {e}')
 
 def schedule_job(playlist_uri, volume_level, time_input):
     def job():
@@ -285,4 +295,6 @@ def index():
     ''', playlists=playlists)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
+
