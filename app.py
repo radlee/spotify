@@ -4,6 +4,7 @@ from spotipy.oauth2 import SpotifyOAuth
 import schedule
 import time
 import threading
+import os  # Import os for environment variables
 
 app = Flask(__name__)
 
@@ -182,4 +183,5 @@ def index():
     ''', playlists=playlists)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port, debug=True)
